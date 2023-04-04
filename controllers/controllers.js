@@ -1,6 +1,6 @@
 const contacts = require("..//models/contacts");
 
-const {HttpError} = require("..//helpers/HttpError");
+const HttpError = require("..//helpers/HttpError");
 
 async function listContacts ( req, res, next){ 
     try {
@@ -18,7 +18,7 @@ async  function  getContactById (req, res, next) {
       const {contactId} = req.params;
       const result = await contacts.getContactById(contactId);
       if(!result) {
-          throw HttpError(404, `Contact with ${contactId} not found`);
+          throw HttpError(404);
       }
       res.json(result);
   }
@@ -31,7 +31,7 @@ async  function  getContactById (req, res, next) {
         const {contactId} = req.params;
         const result = await contacts.removeContact(contactId);
         if(!result) {
-            throw HttpError(404, `Contact with ${contactId} not found`);
+            throw HttpError(404);
         }
         // res.status(204).send()
         res.json({
@@ -56,9 +56,7 @@ async  function  getContactById (req, res, next) {
             try {
                 const {contactId} = req.params;
                 const result = await contacts.updateContact(contactId, req.body);
-                if(!result) {
-                    throw HttpError(404, `Contact with ${contactId} not found`);
-                }
+                if(!result) {throw HttpError(404);}
                 res.json(result);
             }
             catch(error) {
@@ -70,7 +68,7 @@ async  function  getContactById (req, res, next) {
                 getContactById,
                 removeContact,
                 addContact,
-                updateContact
+                updateContact,
             };
 
   

@@ -13,3 +13,13 @@ const HttpError = (status, message = errorMessages[status]) => {
 }
 
 module.exports = HttpError;
+
+/*
+const HttpError = (status, msg = errMess[status]) => {
+    const err = new Error(msg);
+    err.status = status;
+    return err;
+}
+
+module.exports = HttpError;
+ */
