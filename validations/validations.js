@@ -19,7 +19,7 @@ const addSchema = Joi.object({
 }),
 });
 
-
+const putSchema = Joi.object().min(1);
 function validatePostData (req, res, next) {
 
     const {error} = addSchema.validate(req.body);
@@ -34,7 +34,7 @@ function validatePostData (req, res, next) {
   
   function validatePutData (req, res, next) {
   
-    const {error} = addSchema.validate(req.body);
+    const {error} = putSchema.validate(req.body);
   
     if(error) {
         throw HttpError(400, "missing fields");

@@ -44,17 +44,18 @@ const listContacts = async ()=> {
     catch (error) {console.log(error);};
 }
 
-const  updateContact =async ( id, body) => {
+const  updateContact =async ( contactId, body) => {
  try{ const contacts = await listContacts();
-  const index = contacts.findIndex(item => item.id ===  id);
+  const index = contacts.findIndex((contact) => contact.id ===  contactId);
   if(index === -1){
       return null;
   }
-  contacts[index] = {id, ...body };
+  contacts[index] = Object.assign(contacts[index], { ...body });
   await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
   return contacts[index];}
   catch (error) {console.log(error); };};
   
+ 
 module.exports = {
     listContacts,
     getContactById ,
