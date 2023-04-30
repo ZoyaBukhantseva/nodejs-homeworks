@@ -1,5 +1,5 @@
 const { Types } = require('mongoose');
-const HttpError = require('../helpers/HttpErorr')
+const HttpError = require('../helpers/HttpError');
 
 function validateId (req, res, next) {
 
