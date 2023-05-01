@@ -4,13 +4,20 @@ const ctrlWrapper  = require("../utils/ctrlWrapper");
 const HttpError  = require("..//helpers/HttpError");
 
 const getAllContacts = async (req, res) => {
-  const result = await Contact.find();
-  res.json(result);
+  const { _id:owner } = req.user;
+      const { page = 1, limit = 20, favorite } = req.query;
+
+      const skip = (page - 1) * limit;
+
+      const query = (favorite !== undefined)?{ owner, favorite }:{ owner };  
+
+      const result = await Contact.find(query, { skip, limit }).populate("owner", "email subscription");
+      res.json(result);
+ 
 };
 
 const getContactById = async (req, res) => {
   const { contactId } = req.params;
-  // const result = await Contact.findOne({ _id: contactId });
   const result = await Contact.findById(contactId);
   if (!result) {
     throw HttpError(404, `Contact with ${contactId} not found`);
@@ -19,7 +26,8 @@ const getContactById = async (req, res) => {
 };
 
 const addContacts = async (req, res) => {
-  const result = await Contact.create(req.body);
+  const { _id:owner } = req.user;
+  const result = await Contact.create({...req.body, owner});
   res.status(201).json(result);
 };
 
@@ -49,7 +57,7 @@ const removeContacts = async (req, res) => {
   if (!result) {
     throw HttpError(404, `Contact with ${contactId} not found`);
   }
-  res.json({
+  res.status(200).json({
     message: "Delete success",
   });
 };
