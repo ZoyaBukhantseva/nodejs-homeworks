@@ -1,20 +1,23 @@
 const express = require("express");
-const { validatePostData, validatePutData } = require('..//..//validations/validations');
-const { listContacts, getContactById, removeContact, addContact, updateContact } = require('../../controllers/controllers');
-
-
+const ctrl = require("..//..//controllers/controllers")
+const validateBody  = require("..//..//validations/validations");
+const { schemas } = require("..//..//models/contacts");
+const authorization = require("..//..//middlewares/authorization")
+const validateId = require("..//..//middlewares/validateId")
 const router = express.Router();
 
-router.get('/', listContacts);
+router.get("/", authorization,ctrl.getAllContacts);
 
-router.get('/:contactId', getContactById);
+router.get("/:contactId", authorization,validateId, ctrl.getContactById);
 
+router.post("/",  authorization,validateId,validateBody(schemas.addSchema), ctrl.addContacts);
 
-router.post('/', validatePostData, addContact);
+router.put("/:contactId", authorization,validateId, validateBody(schemas.putSchema), ctrl.updateContacts);
 
+router.patch("/:contactId/favorite",  authorization, validateId, validateBody(schemas.updateFavoriteSchema),
+  ctrl.updateStatusContact
+);
 
-router.delete('/:contactId', removeContact);
-
-router.put('/:contactId', validatePutData, updateContact);
+router.delete("/:contactId", authorization,validateId, ctrl.removeContacts);
 
 module.exports = router;
