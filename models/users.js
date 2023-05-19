@@ -19,10 +19,7 @@ const usersSchema = new Schema({
       type: String,
       default: null,
     },
-    avatarURL: {
-      type: String,
-      required: [true, 'Avatar is required'],
-    }
+   
   }, { versionKey: false });
 
   const Users = model('user', usersSchema);

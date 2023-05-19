@@ -1,16 +1,16 @@
-const express = require("express");
+const express = require ("express");
 const ctrl = require("..//..//controllers/controllers")
 const validateBody  = require("..//..//validations/validations");
-const { schemas } = require("..//..//models/contacts");
+const { schemas } = require("..//..//validations/contactValidations");
 const authorization = require("..//..//middlewares/authorization")
 const validateId = require("..//..//middlewares/validateId")
 const router = express.Router();
 
-router.get("/", authorization,ctrl.getAllContacts);
+router.get("/", authorization, ctrl.getAllContacts);
 
 router.get("/:contactId", authorization,validateId, ctrl.getContactById);
 
-router.post("/",  authorization,validateId,validateBody(schemas.addSchema), ctrl.addContacts);
+router.post("/",  authorization,validateBody(schemas.addSchema), ctrl.addContacts);
 
 router.put("/:contactId", authorization,validateId, validateBody(schemas.putSchema), ctrl.updateContacts);
 

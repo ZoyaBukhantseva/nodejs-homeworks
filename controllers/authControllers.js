@@ -3,14 +3,11 @@ const HttpError = require('..//helpers/HttpError');
 const ctrllWrapper  = require('../utils/ctrlWrapper');
 const bcrpt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const gravatar = require('gravatar');
-const fs = require('fs/promises');
-const path = require('path');
-const jimpOtimizer = require('../helpers/jimpOptimizer');
+
 
 const { SECRET_KEY } = process.env;
 
-const avatarDir = path.join(__dirname, "../", "public", "avatars");
+
 
 async function registerUser (req, res) {
 
@@ -20,9 +17,9 @@ async function registerUser (req, res) {
     if (user) throw HttpError(409, "Email in use") ;
 
     const soltPasw = await bcrpt.hash(password, 10);
-    const avatarURL = gravatar.url(email);
+ 
 
-    const result = await Users.create({ password: soltPasw, email, avatarURL });
+    const result = await Users.create({ password: soltPasw, email });
 
     res.status(201).json({ "user":
         {"email": result.email,
@@ -91,27 +88,6 @@ async function updateUserSubscript (req, res) {
 
 };
 
-async function updateUserAvatar (req,res) {
-
-    const { _id } = req.user;
-
-    const { path: tempUpload, filename } = req.file;
-
-    await jimpOtimizer(tempUpload);
-
-    const avatarName = `${_id}_${filename}`;
-
-    const resultPath = path.join(avatarDir, avatarName);
-
-    await fs.rename(tempUpload, resultPath);
-
-    const avatarURL = path.join('avatars', avatarName);
-
-    await Users.findByIdAndUpdate(_id, { avatarURL });
-
-    res.json({avatarURL});
-
-};
 
 module.exports = {
     registerUser: ctrllWrapper(registerUser),
@@ -119,5 +95,5 @@ module.exports = {
     logoutUser: ctrllWrapper(logoutUser),
     currentUser: ctrllWrapper(currentUser),
     updateUserSubscript: ctrllWrapper(updateUserSubscript),
-    updateUserAvatar:ctrllWrapper(updateUserAvatar),
+   
 };
