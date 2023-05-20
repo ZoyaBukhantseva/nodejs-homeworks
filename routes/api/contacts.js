@@ -10,7 +10,7 @@ router.get("/", authorization,ctrl.getAllContacts);
 
 router.get("/:contactId", authorization,validateId, ctrl.getContactById);
 
-router.post("/",  authorization,validateId,validateBody(schemas.addSchema), ctrl.addContacts);
+router.post("/",  authorization,validateBody(schemas.addSchema), ctrl.addContacts);
 
 router.put("/:contactId", authorization,validateId, validateBody(schemas.putSchema), ctrl.updateContacts);
 
