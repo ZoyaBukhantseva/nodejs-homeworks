@@ -2,18 +2,32 @@ const {Contact} = require("../models/contacts");
 const ctrlWrapper  = require("../utils/ctrlWrapper");
 const HttpError  = require("..//helpers/HttpError");
 
-const getAllContacts = async (req, res) => {
-  const { _id: owner } = req.user;
-      const { page = 1, limit = 10, favorite } = req.query;
+// const getAllContacts = async (req, res) => {
+//   const { _id: owner } = req.user;
+//       const { page = 1, limit = 10, favorite } = req.query;
      
-      const skip = (page - 1) * limit;
+//       const skip = (page - 1) * limit;
 
-      const query = (favorite !== undefined)?{ owner, favorite }:{ owner };  
+//       const query = (favorite !== undefined)?{ owner, favorite }:{ owner };  
 
-      const result = await Contact.find(query, { skip, limit }).populate("owner", "email subscription");
+//       const result = await Contact.find(query, { skip, limit }).populate("owner", "email subscription");
       
-      res.json(result);
+//       res.json(result);
  
+// };
+async function getAllContacts ( req, res) {
+
+  const { _id:owner } = req.user;
+  const { page = 1, limit = 20, favorite } = req.query;
+
+  console.log(favorite);
+
+  const skip = (page - 1) * limit;
+
+  const query = (favorite !== undefined)?{ owner, favorite }:{ owner };  
+
+  const result = await Contact.find(query, { skip }).populate("owner", "email subscription");
+  res.json(result);
 };
 
 const getContactById = async (req, res) => {
@@ -42,9 +56,7 @@ const updateContacts = async (req, res) => {
 
 const updateStatusContact = async (req, res) => {
   const { contactId } = req.params;
-  const result = await Contact.findByIdAndUpdate(contactId, req.body, {
-    new: true,
-  });
+  const result = await Contact.findByIdAndUpdate(contactId, req.body, {new: true});
   if (!result) {
     throw HttpError(404, `Contact with ${contactId} not found`);
   }
