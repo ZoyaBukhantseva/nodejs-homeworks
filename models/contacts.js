@@ -1,65 +1,83 @@
-const fs = require("fs/promises");
-const path = require("path");
-const {nanoid} = require("nanoid");
-// const contactsPath = path.resolve("models", "contacts.json")
-const contactsPath = path.join(__dirname, "contacts.json");
+const {Schema,model}= require("mongoose");
+const Joi = require("joi");
 
-const listContacts = async ()=> {
-   try{const data = await fs.readFile(contactsPath);
-    return JSON.parse(data);
-  } 
-  catch (error) {console.log(error); };
-}
-  const getContactById = async (id) => {
-   try{ const contacts = await listContacts();
-    const result = contacts.find(item => item.id === id);
-    return result || null;}
-    catch (error) {console.log(error); };
+const contactSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Set name for contact"],
+    },
+    email: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+    favorite: {
+      type: Boolean,
+      default: false,
+    } ,
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: 'user',
     }
-  
-  const removeContact= async (id) => {
-   try {const contacts = await listContacts();
-    const index = contacts.findIndex(item => item.id === id);
-    if(index === -1){
-        return null;
-    }
-    const [result] = contacts.splice(index, 1);
-    await fs.writeFile( contactsPath, JSON.stringify(contacts, null, 2));
-    return result;}
-    catch (error) {console.log(error); };
-}
 
-  
- const  addContact= async({name, email, phone}) => {
-   try {const contacts = await listContacts();
-    const newContact = {
-        id: nanoid(),
-        name, 
-        email, 
-        phone
-    };
-    contacts.push(newContact);
-    await fs.writeFile( contactsPath, JSON.stringify(contacts, null, 2));
-    return newContact;}
-    catch (error) {console.log(error);};
-}
+  },
+  { versionKey: false }
+);
 
-const  updateContact =async ( contactId, body) => {
- try{ const contacts = await listContacts();
-  const index = contacts.findIndex((contact) => contact.id ===  contactId);
-  if(index === -1){
-      return null;
-  }
-  contacts[index] = Object.assign(contacts[index], { ...body });
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return contacts[index];}
-  catch (error) {console.log(error); };};
+
+
+const addSchema = Joi.object({
+  name: Joi.string().required().messages({
+    "any.required": `missing required name field`,
+    "string.empty": `"name" cannot be empty`,
+    "string.base": `"name" must be string`,
+  }),
+  email: Joi.string().required().messages({
+    "any.required": `missing required email field`,
+    "string.empty": `"email" cannot be empty`,
+    "string.base": `"email" must be string`,
+  }),
+  phone: Joi.string().required().messages({
+    "any.required": `missing required phone field`,
+    "string.empty": `phone cannot be empty`,
+    "string.base": `phone must be string`
+  }),
+  favorite: Joi.boolean(),
+});
+const putSchema = Joi.object({
+  name: Joi.string().required().messages({
+  "any.required": `missing fields`,
   
- 
+}),
+email: Joi.string().required().messages({
+  "any.required": `missing fields`,
+}),
+phone: Joi.string().required().messages({
+  "any.required": `missing fields`,
+}),})
+  
+const updateFavoriteSchema = Joi.object({
+  favorite: Joi.boolean().required().messages({
+    "any.required": `missing required favorite field`}
+    ),
+});
+
+contactSchema.post("save", (error, data, next) => {
+  error.status = 400;
+  next();
+});
+const schemas = {
+  addSchema,
+  updateFavoriteSchema,
+ putSchema 
+  
+};
+
+const Contact = model("contact", contactSchema);
+
 module.exports = {
-    listContacts,
-    getContactById ,
-    removeContact,
-    addContact,
-    updateContact,
-}
+  Contact,
+  schemas,
+};
