@@ -1,74 +1,72 @@
-const contacts = require("..//models/contacts");
+const {Contact} = require("../models/contacts");
+const ctrlWrapper  = require("../utils/ctrlWrapper");
 
-const HttpError = require("..//helpers/HttpError");
+const HttpError  = require("..//helpers/HttpError");
 
-async function listContacts ( req, res, next){ 
-    try {
-    const result = await contacts.listContacts();
-    res.json(result);
+const getAllContacts = async (req, res) => {
+  const { _id:owner } = req.user;
+      const { page = 1, limit = 20, favorite } = req.query;
 
-}
-catch(error) {
-    next(error);
+      const skip = (page - 1) * limit;
 
-}}
+      const query = (favorite !== undefined)?{ owner, favorite }:{ owner };  
 
-async  function  getContactById (req, res, next) {
-    try {
-      const {contactId} = req.params;
-      const result = await contacts.getContactById(contactId);
-      if(!result) {
-          throw HttpError(404);
-      }
+      const result = await Contact.find(query, { skip, limit }).populate("owner", "email subscription");
       res.json(result);
-  }
-  catch(error) {
-      next(error);
-  }
-  }
-  async function removeContact(req, res, next){
-    try {
-        const {contactId} = req.params;
-        const result = await contacts.removeContact(contactId);
-        if(!result) {
-            throw HttpError(404);
-        }
-        // res.status(204).send()
-        res.json({
-            message: "Delete success"
-        })
-    }
-    catch(error) {
-        next(error);
-    }
-    }
-    async function addContact (req, res, next){
-        try {
-            const result = await contacts.addContact(req.body);
-            res.status(201).json(result);
-        }
-        catch(error) {
-            next(error);
-        }
-        }
-        
-        async function updateContact (req, res, next){
-            try {
-                const {contactId} = req.params;
-                const result = await contacts.updateContact(contactId, req.body);
-                if(!result) {throw HttpError(404);}
-                res.json(result);
-            }
-            catch(error) {
-                next(error);
-            }
-            }
-            module.exports = {
-                listContacts,
-                getContactById,
-                removeContact,
-                addContact,
-                updateContact,
-            };
+ 
+};
 
-  
+const getContactById = async (req, res) => {
+  const { contactId } = req.params;
+  const result = await Contact.findById(contactId);
+  if (!result) {
+    throw HttpError(404, `Contact with ${contactId} not found`);
+  }
+  res.json(result);
+};
+
+const addContacts = async (req, res) => {
+  const { _id:owner } = req.user;
+  const result = await Contact.create({...req.body, owner});
+  res.status(201).json(result);
+};
+
+const updateContacts = async (req, res) => {
+  const { contactId } = req.params;
+  const result = await Contact.findByIdAndUpdate(contactId, req.body, {new: true});
+  if (!result) {
+    throw HttpError(404, "Contact not found");
+  }
+  res.json(result);
+};
+
+const updateStatusContact = async (req, res) => {
+  const { contactId } = req.params;
+  const result = await Contact.findByIdAndUpdate(contactId, req.body, {
+    new: true,
+  });
+  if (!result) {
+    throw HttpError(404, `Contact with ${contactId} not found`);
+  }
+  res.json(result);
+};
+
+const removeContacts = async (req, res) => {
+  const { contactId } = req.params;
+  const result = await Contact.findByIdAndDelete(contactId);
+  if (!result) {
+    throw HttpError(404, `Contact with ${contactId} not found`);
+  }
+  res.status(200).json({
+    message: "Delete success",
+  });
+};
+
+module.exports = {
+  getAllContacts: ctrlWrapper(getAllContacts),
+  getContactById: ctrlWrapper(getContactById),
+  addContacts: ctrlWrapper(addContacts),
+  updateContacts: ctrlWrapper(updateContacts),
+  updateStatusContact: ctrlWrapper(updateStatusContact),
+  removeContacts: ctrlWrapper(removeContacts)
+};
